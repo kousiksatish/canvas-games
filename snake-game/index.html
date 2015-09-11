@@ -9,64 +9,26 @@
 
 <script>
 
-var cols = 20;
-var rows = 30;
+var cols = 100;
+var rows = 60;
 var SNAKE = 1;
 var EMPTY = 0;
 var FOOD = 2;
 var grid = [];
 
-for(y = 0 ; y < rows ; y++)
-{
-	grid.push([]);
-	for(x = 0; x < cols ; x++)
-		grid[y].push(EMPTY);
-}
+var LEFT = 6;
+var UP = 8;
+var DOWN = 2;
+var RIGHT = 4;
+var queue = [];
+var direction = LEFT;
+
+var head = {x:2,y:6};
 
 
-function getRandomColor() {
-    var letters = '0123456789ABCDEF'.split('');
-    var color = '#';
-    for (var i = 0; i < 6; i++ ) {
-        color += letters[Math.floor(Math.random() * 16)];
-    }
-    return color;
-}
-
-function setSnake(x, y){
-	grid[x][y] = SNAKE;
-}
-
-function fillColors(ctx){
-	for(var i=0; i<cols;i++)
-	{
-		for(var j=0; j<rows;j++)
-		{
-			if(grid[i][j] == SNAKE)
-			{
-				ctx.fillStyle = "#000";
-				ctx.fillRect(i*10,j*10,10,10);
-			}
-			if(grid[i][j] == FOOD)
-			{
-				ctx.fillStyle = "#0ff";
-				ctx.fillRect(i*10,j*10,10,10);
-			}
-		}
-	}
-}
-
-function setFood(ctx) {
-	var x = Math.floor(Math.random()*cols);
-	var y = Math.floor(Math.random()*rows);
-
-	grid[x][y] = FOOD;
-}
-function main()
-{
-	canvas = document.createElement("canvas")
-	canvas.width = 10 * cols;
-	canvas.height = 10 * rows;
+canvas = document.createElement("canvas")
+	canvas.width = 5 * cols;
+	canvas.height = 5 * rows;
 	canvas.id = "myCanvas";
 
 	document.body.appendChild(canvas);
@@ -75,15 +37,178 @@ function main()
 
 
 	var ctx = c.getContext("2d");
-	ctx.clearRect(0,0,10*cols,10*rows);
-	ctx.strokeRect(0,0,10*cols,10*rows);
-	setSnake(3,3);
-	setFood();
-	fillColors(ctx);
+
+
+for(x = 0 ; x < cols ; x++)
+{
+	grid.push([]);
+	for(y = 0; y < cols ; y++)
+		grid[x].push(EMPTY);
 }
 
 
-main();
+
+function setSnake(){
+	for(var i = 0; i<queue.length; i++)
+		grid[queue[i].x][queue[i].y] = SNAKE;
+}
+
+function fillColors(){
+	for(var i=0; i<cols;i++)
+	{
+		for(var j=0; j<rows;j++)
+		{
+			//ctx.strokeRect(i*5,j*5,5,5);
+			if(grid[i][j] == SNAKE)
+			{
+				ctx.fillStyle = "#000";
+				ctx.fillRect(i*5,j*5,5,5);
+			}
+			if(grid[i][j] == FOOD)
+			{
+				ctx.fillStyle = "#0ff";
+				ctx.fillRect(i*5,j*5,5,5);
+			}
+			if(grid[i][j] == EMPTY)
+			{
+				//ctx.fillStyle = "#fff";
+				//ctx.fillRect(i*5,j*5,5,5);
+			 }
+		}
+	}
+}
+
+function setFood(ctx) {
+	var pos = {x:0, y:0};
+	pos.x = Math.floor(Math.random()*(cols-2))+1;
+	pos.y = Math.floor(Math.random()*(rows-2))+1;
+	console.log(pos);
+	grid[pos.x][pos.y] = FOOD;
+}
+function init()
+{
+	main();
+	window.requestAnimationFrame(move);
+}
+
+window.addEventListener("keydown", onKeyDown, false);
+
+
+function onKeyDown(event)
+{
+	console.log("key down fired");
+	var keyCode = event.keyCode;
+	switch(keyCode)
+	{
+		case 37:
+			if(direction!=LEFT)
+			direction = RIGHT;
+			break;
+		case 38:
+			if(direction!=DOWN)
+			direction = UP;
+			break;
+		case 39:
+			if(direction!=RIGHT)
+			direction = LEFT;
+			break;
+		case 40:
+			if(direction!=UP)
+			direction = DOWN;
+			break;
+		case 32:
+			direction = 0;
+			break;
+	}
+}
+
+function main()
+{
+	
+	ctx.clearRect(0,0,5*cols,5*rows);
+	ctx.strokeRect(0,0,5*cols,5*rows);
+	queue.push({x:2,y:3});
+	queue.push({x:2,y:4});
+	queue.push({x:2,y:5});
+	queue.push(head);
+	setSnake();
+	setFood();
+	fillColors(ctx);
+
+}
+
+function move()
+{
+	switch(direction)
+	{
+		case LEFT:
+			if(head.x<cols-1)
+			{
+			var removed = queue.shift();
+			grid[removed.x][removed.y] = EMPTY;
+			var tobepushed = {x:head.x+1, y:head.y};
+			queue.push(tobepushed);
+			setSnake();
+			head = tobepushed;
+			ctx.clearRect(0,0,5*cols,5*rows);
+			ctx.strokeRect(0,0,5*cols,5*rows);
+			fillColors();
+			}
+			break;
+		case RIGHT:
+			if(head.x>0)
+			{
+			var removed = queue.shift();
+			grid[removed.x][removed.y] = EMPTY;
+			var tobepushed = {x:head.x-1, y:head.y};
+			console.log(head);
+			console.log(tobepushed);
+			queue.push(tobepushed);
+			setSnake();
+			head = tobepushed;
+			ctx.clearRect(0,0,5*cols,5*rows);
+			ctx.strokeRect(0,0,5*cols,5*rows);
+			fillColors();
+			}
+			break;
+		case UP:
+			if(head.y>0)
+			{
+			var removed = queue.shift();
+			grid[removed.x][removed.y] = EMPTY;
+			var tobepushed = {x:head.x, y:head.y-1};
+			console.log(head);
+			console.log(tobepushed);
+			queue.push(tobepushed);
+			setSnake();
+			head = tobepushed;
+			ctx.clearRect(0,0,5*cols,5*rows);
+			ctx.strokeRect(0,0,5*cols,5*rows);
+			fillColors();
+			}
+			break;
+		case DOWN:
+			if(head.y<rows-1)
+			{
+			var removed = queue.shift();
+			grid[removed.x][removed.y] = EMPTY;
+			var tobepushed = {x:head.x, y:head.y+1};
+			console.log(head);
+			console.log(tobepushed);
+			queue.push(tobepushed);
+			setSnake();
+			head = tobepushed;
+			ctx.clearRect(0,0,5*cols,5*rows);
+			ctx.strokeRect(0,0,5*cols,5*rows);
+			fillColors();
+			}
+			break;
+	}
+	window.requestAnimationFrame(move);
+}
+
+
+init();
 
 
 
