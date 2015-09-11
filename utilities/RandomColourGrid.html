@@ -1,0 +1,65 @@
+<html>
+<head>
+
+</head>
+
+<body>
+
+</body>
+
+<script>
+
+var cols = 20;
+var rows = 30;
+var SNAKE = 1;
+var EMPTY = 0;
+var grid = [];
+
+for(y = 0 ; y < rows ; y++)
+{
+	grid.push([]);
+	for(x = 0; x < cols ; x++)
+		grid[y].push(EMPTY);
+}
+
+
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '#';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+
+function main()
+{
+	canvas = document.createElement("canvas")
+	canvas.width = 10 * cols;
+	canvas.height = 10 * rows;
+	canvas.id = "myCanvas";
+
+	document.body.appendChild(canvas);
+
+	var c = document.getElementById("myCanvas");
+
+
+	var ctx = c.getContext("2d");
+	ctx.clearRect(0,0,10*cols,10*rows);
+
+	for(x = 0; x< cols; x++)
+	{
+		for(y = 0; y<rows; y++)
+		{
+			ctx.strokeRect(x*10,y*10,10,10);
+			ctx.fillStyle = getRandomColor();
+			ctx.fillRect(x*10,y*10,10,10)
+		}
+	}
+}
+main();
+
+</script>
+
+</html>
