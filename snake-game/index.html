@@ -27,6 +27,8 @@ var head = {x:3,y:6};
 var food = {x:0,y:0};
 
 var score = 0;
+
+var reqId;
 canvas = document.createElement("canvas")
 	canvas.width = 10 * cols;
 	canvas.height = 10 * rows;
@@ -34,10 +36,16 @@ canvas = document.createElement("canvas")
 
 	document.body.appendChild(canvas);
 
+scrdiv = document.createElement("div")
+scrdiv.id = "score";
+
+document.body.appendChild(scrdiv);
+
 	var c = document.getElementById("myCanvas");
 
 
 	var ctx = c.getContext("2d");
+
 
 
 for(x = 0 ; x < cols ; x++)
@@ -50,10 +58,37 @@ for(x = 0 ; x < cols ; x++)
 
 
 function setSnake(){
-	for(var i = 0; i<queue.length; i++)
+	var flag = 0;
+	for(var i = 0 ; i<queue.length; i++)
+	{
+		if(grid[queue[i].x][queue[i].y] == FOOD)
+			flag = 1;
 		grid[queue[i].x][queue[i].y] = SNAKE;
+	}
+	//if(flag)
+		//setFood();
 }
 
+function checkCollision()
+{
+	var flag = 0;
+	for(var i = 0; i<queue.length-1; i++)
+	{
+		if(queue[i].x == head.x && queue[i].y == head.y)
+		{
+			queue = [];
+			ctx.clearRect(0,0,10*cols,10*rows);
+			ctx.strokeRect(0,0,10*cols,10*rows);
+			flag = 1;
+			break;
+			
+
+			
+		}
+	}
+	if(flag)
+		init();
+}
 function fillColors(){
 	for(var i=0; i<cols;i++)
 	{
@@ -70,18 +105,14 @@ function fillColors(){
 				ctx.fillStyle = "#0ff";
 				ctx.fillRect(i*10,j*10,10,10);
 			}
-			if(grid[i][j] == EMPTY)
-			{
-				//ctx.fillStyle = "#fff";
-				//ctx.fillRect(i*10,j*10,10,10);
-			 }
+		
 		}
 	}
 }
-
 function setFood(ctx) {
 	food.x = Math.floor(Math.random()*(cols-2))+1;
 	food.y = Math.floor(Math.random()*(rows-2))+1;
+
 	grid[food.x][food.y] = FOOD;
 }
 function init()
@@ -116,8 +147,13 @@ function onKeyDown(event)
 			direction = DOWN;
 			break;
 		case 32:
-			direction = 0;
+			if(freq == 2)
+			freq = 5;
+			else
+				freq = 2;
 			break;
+
+
 	}
 }
 
@@ -128,18 +164,22 @@ function main()
 	ctx.strokeRect(0,0,10*cols,10*rows);
 	
 	queue.push(head);
+
+	document.getElementById('score').innerHTML = score;
+	
 	setSnake();
 	setFood();
 	fillColors(ctx);
 
 }
 var frames = 0;
+var freq = 8;
 function move()
 {
 	
 	
 	frames++;
-	if(frames%5 == 0)
+	if(frames%freq == 0)
 	{
 	switch(direction)
 	{
@@ -152,6 +192,7 @@ function move()
 				console.log("yes");
 				score++;
 				setFood();
+				document.getElementById('score').innerHTML = score;
 			}
 			else
 			{
@@ -164,6 +205,15 @@ function move()
 			ctx.clearRect(0,0,10*cols,10*rows);
 			ctx.strokeRect(0,0,10*cols,10*rows);
 			fillColors();
+			}
+			else
+			{	
+				var tobepushed = {x:0,y:head.y};
+				queue.push(tobepushed);
+				var removed = queue.shift();
+				grid[removed.x][removed.y] = EMPTY;
+				setSnake();
+				head = tobepushed;
 			}
 			break;
 		case RIGHT:
@@ -175,11 +225,13 @@ function move()
 				console.log("yes");
 				score++;
 				setFood();
+				document.getElementById('score').innerHTML = score;
 			}
 			else
 			{
 				var removed = queue.shift();
 				grid[removed.x][removed.y] = EMPTY;
+
 			}
 			queue.push(tobepushed);
 			setSnake();
@@ -187,6 +239,15 @@ function move()
 			ctx.clearRect(0,0,10*cols,10*rows);
 			ctx.strokeRect(0,0,10*cols,10*rows);
 			fillColors();
+			}
+			else
+			{	
+				var tobepushed = {x:cols-1,y:head.y};
+				queue.push(tobepushed);
+				var removed = queue.shift();
+				grid[removed.x][removed.y] = EMPTY;
+				setSnake();
+				head = tobepushed;
 			}
 			break;
 		case UP:
@@ -199,6 +260,7 @@ function move()
 				console.log("yes");
 				score++;
 				setFood();
+				document.getElementById('score').innerHTML = score;
 			}
 			else
 			{
@@ -211,6 +273,15 @@ function move()
 			ctx.clearRect(0,0,10*cols,10*rows);
 			ctx.strokeRect(0,0,10*cols,10*rows);
 			fillColors();
+			}
+			else
+			{	
+				var tobepushed = {x:head.x,y:rows - 1};
+				queue.push(tobepushed);
+				var removed = queue.shift();
+				grid[removed.x][removed.y] = EMPTY;
+				setSnake();
+				head = tobepushed;
 			}
 			break;
 		case DOWN:
@@ -222,6 +293,7 @@ function move()
 				console.log("yes");
 				score++;
 				setFood();
+				document.getElementById('score').innerHTML = score;
 			}
 			else
 			{
@@ -237,10 +309,21 @@ function move()
 			ctx.strokeRect(0,0,10*cols,10*rows);
 			fillColors();
 			}
+			else
+			{	
+				var tobepushed = {x:head.x,y:0};
+				queue.push(tobepushed);
+				var removed = queue.shift();
+				grid[removed.x][removed.y] = EMPTY;
+				setSnake();
+				head = tobepushed;
+			}
 			break;
 	}
+	//checkCollision();
 }
-	window.requestAnimationFrame(move);
+	
+	reqId = window.requestAnimationFrame(move);
 
 }
 
