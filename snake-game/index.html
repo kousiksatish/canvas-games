@@ -8,14 +8,13 @@
 </body>
 
 <script>
-
+//Variables
 var cols = 100;
 var rows = 30;
 var SNAKE = 1;
 var EMPTY = 0;
 var FOOD = 2;
 var grid = [];
-
 var LEFT = 6;
 var UP = 8;
 var DOWN = 2;
@@ -29,25 +28,48 @@ var food = {x:0,y:0};
 var score = 0;
 
 var reqId;
+
+//Create Canvas
 canvas = document.createElement("canvas")
-	canvas.width = 10 * cols;
-	canvas.height = 10 * rows;
-	canvas.id = "myCanvas";
+canvas.width = 10 * cols;
+canvas.height = 10 * rows;
+canvas.id = "myCanvas";
 
-	document.body.appendChild(canvas);
+document.body.appendChild(canvas);
 
-scrdiv = document.createElement("div")
-scrdiv.id = "score";
+//Creare score div
+scrdiv = document.createElement("div");
+scrdiv.innerHTML = "Score : ";
+scrdiv.id = "scrdiv";
+document.body.appendChild(scrdiv);
+
+scrspan = document.createElement("span")
+scrspan.id = "score";
+document.getElementById("scrdiv").appendChild(scrspan)
 
 document.body.appendChild(scrdiv);
 
-	var c = document.getElementById("myCanvas");
+//Create Instructions div
+
+var instdiv = document.createElement("div");
+instdiv.id = "instdiv";
+instdiv.innerHTML = "Instructions<br>"
+document.body.appendChild(instdiv);
+
+var li = document.createElement("li");
+li.innerHTML = "Hit space to toggle between fast and slow modes";
+document.getElementById("instdiv").appendChild(li);
+
+var li = document.createElement("li");
+li.innerHTML = "Borders don't kill you :)";
+document.getElementById("instdiv").appendChild(li);
+
+//Canvas initialised
+var c = document.getElementById("myCanvas");
+var ctx = c.getContext("2d");
 
 
-	var ctx = c.getContext("2d");
-
-
-
+//Grid initialised
 for(x = 0 ; x < cols ; x++)
 {
 	grid.push([]);
@@ -55,20 +77,17 @@ for(x = 0 ; x < cols ; x++)
 		grid[x].push(EMPTY);
 }
 
-
-
-function setSnake(){
+//Function to set snake for elements in queue
+function setSnake()
+{
 	var flag = 0;
 	for(var i = 0 ; i<queue.length; i++)
 	{
-		if(grid[queue[i].x][queue[i].y] == FOOD)
-			flag = 1;
 		grid[queue[i].x][queue[i].y] = SNAKE;
 	}
-	//if(flag)
-		//setFood();
 }
 
+//Function to check self collision
 function checkCollision()
 {
 	var flag = 0;
@@ -81,14 +100,12 @@ function checkCollision()
 			ctx.strokeRect(0,0,10*cols,10*rows);
 			flag = 1;
 			break;
-			
-
-			
 		}
 	}
-	if(flag)
-		init();
+	return flag;
 }
+
+//Function to fill colors for the canvas based on position of snake, food
 function fillColors(){
 	for(var i=0; i<cols;i++)
 	{
@@ -109,17 +126,6 @@ function fillColors(){
 		}
 	}
 }
-function setFood(ctx) {
-	food.x = Math.floor(Math.random()*(cols-2))+1;
-	food.y = Math.floor(Math.random()*(rows-2))+1;
-
-	grid[food.x][food.y] = FOOD;
-}
-function init()
-{
-	main();
-	move();
-}
 
 window.addEventListener("keydown", onKeyDown, false);
 
@@ -130,23 +136,23 @@ function onKeyDown(event)
 	var keyCode = event.keyCode;
 	switch(keyCode)
 	{
-		case 37:
+		case 37://Right key
 			if(direction!=LEFT)
 			direction = RIGHT;
 			break;
-		case 38:
+		case 38://Up key
 			if(direction!=DOWN)
 			direction = UP;
 			break;
-		case 39:
+		case 39://Left key
 			if(direction!=RIGHT)
 			direction = LEFT;
 			break;
-		case 40:
+		case 40://Down key
 			if(direction!=UP)
 			direction = DOWN;
 			break;
-		case 32:
+		case 32://Space key
 			if(freq == 2)
 			freq = 5;
 			else
@@ -157,6 +163,40 @@ function onKeyDown(event)
 	}
 }
 
+
+//Function to set food at random position
+function setFood(ctx) {
+	food.x = Math.floor(Math.random()*(cols-2))+1;
+	food.y = Math.floor(Math.random()*(rows-2))+1;
+
+	grid[food.x][food.y] = FOOD;
+}
+
+//Initialising function
+function init()
+{
+	main();
+	move();
+}
+
+//Function to Clear the grid
+function clearGrid()
+{
+	for(var i=0; i<cols;i++)
+	{
+		for(var j=0; j<rows;j++)
+		{
+			grid[i][j] = EMPTY;
+		}
+	}
+	queue = [];
+
+	head = {x:3,y:6};
+	food = {x:0,y:0};
+	score = 0;
+}
+
+//Function to start the game
 function main()
 {
 	
@@ -164,6 +204,18 @@ function main()
 	ctx.strokeRect(0,0,10*cols,10*rows);
 	
 	queue.push(head);
+	head = {x:head.x+1,y:head.y};
+	queue.push(head);
+	head = {x:head.x+1,y:head.y};
+	queue.push(head);
+	head = {x:head.x+1,y:head.y};
+	queue.push(head);
+	head = {x:head.x+1,y:head.y};
+	queue.push(head);
+	head = {x:head.x+1,y:head.y};
+	queue.push(head);
+	
+
 
 	document.getElementById('score').innerHTML = score;
 	
@@ -173,7 +225,9 @@ function main()
 
 }
 var frames = 0;
-var freq = 8;
+var freq = 5;
+
+//Function to recurse
 function move()
 {
 	
@@ -319,11 +373,19 @@ function move()
 				head = tobepushed;
 			}
 			break;
+			
 	}
-	//checkCollision();
+	if(checkCollision() == 1)
+	{
+
+		window.cancelAnimationFrame(reqId);
+		alert("Good game!! Your score was "+ score);
+		clearGrid();
+		init();
+	}
 }
-	
-	reqId = window.requestAnimationFrame(move);
+	if(!checkCollision())
+		reqId = window.requestAnimationFrame(move);
 
 }
 
